@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ovpu50o&56%(t1(1xh9qnl4ps&bgp*aul82cxhjp)k90$l%d1)'
+SECRET_KEY = 'your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'myshop_db',       # Имя вашей БД
         'USER': 'postgres',        # Логин от PostgreSQL
-        'PASSWORD': '123',  # Пароль от PostgreSQL
+        'PASSWORD': 'your-db-password-here',  # Пароль от PostgreSQL
         'HOST': 'localhost',
         'PORT': '5432',
     }
