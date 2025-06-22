@@ -1,0 +1,266 @@
+{% extends "shop/base.html" %}
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+    <div class="row">
+        <!-- Основная колонка с товарами -->
+        <div class="col-lg-7 mb-4">
+            <div class="card product-card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="bi bi-cart3"></i> Ваш заказ ({{ order.items.count }})</h4>
+                </div>
+                <div class="card-body">
+                    {% for item in order.items.all %}
+                    <div class="d-flex mb-3 pb-3 border-bottom">
+                        <img src="{{ item.product.image.url }}"
+                             class="product-image checkout-img me-3"
+                             alt="{{ item.product.name }}">
+                        <div class="flex-grow-1">
+                            <h5 class="product-title mb-1">{{ item.product.name }}</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted me-2">Кол-во:</span>
+                                    <div class="input-group input-group-sm" style="width: 100px;">
+                                        <button class="btn btn-outline-secondary" type="button">-</button>
+                                        <input type="text" class="form-control text-center quantity-input"
+                                               value="{{ item.quantity }}">
+                                        <button class="btn btn-outline-secondary" type="button">+</button>
+                                    </div>
+                                </div>
+                                <span class="product-price">${{ item.get_cost }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Введите промокод">
+                            <button class="btn btn-outline-primary">Применить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковая колонка с оплатой -->
+        <div class="col-lg-5">
+            <div class="sticky-checkout">
+                <div class="card product-card">
+                    <div class="card-header bg-success text-white">
+                        <h4><i class="bi bi-credit-card"></i> Оплата заказа</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Стоимость товаров:</span>
+                                <span>${{ order.get_total_cost }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Доставка:</span>
+                                <span class="text-success">Бесплатно</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-2 border-top">
+                                <span>Итого к оплате:</span>
+                                <span>${{ order.get_total_cost }}</span>
+                            </div>
+                        </div>
+
+                        <form method="post" class="needs-validation" novalidate id="checkoutForm">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Способ оплаты</label>
+                                <div class="border rounded overflow-hidden">
+                                    <div class="p-3 border-bottom bg-light">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment" id="card" value="card" checked>
+                                            <label class="form-check-label d-flex justify-content-between w-100" for="card">
+                                                <span>Банковская карта</span>
+                                                <div>
+                                                    <i class="bi bi-credit-card fs-5"></i>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="p-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment" id="sbp">
+                                            <label class="form-check-label" for="sbp">
+                                                <span>СБП (Система быстрых платежей)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="card_number" id="hiddenCardNumber">
+                            <input type="hidden" name="card_expiry" id="hiddenCardExpiry">
+                            <input type="hidden" name="card_cvv" id="hiddenCardCVV">
+                            <input type="hidden" name="card_name" id="hiddenCardName">
+
+                            <button type="submit" class="btn btn-success w-100 py-3 fw-bold mt-3">
+                                <i class="bi bi-lock-fill"></i> ОПЛАТИТЬ ${{ order.get_total_cost }}
+                            </button>
+
+                            <div class="mt-3 text-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <i class="bi bi-shield-check text-success fs-4 me-2"></i>
+                                    <span class="small">Безопасная оплата. Данные защищены</span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для ввода данных карты -->
+<div id="cardModal" class="modal" tabindex="-1" style="display:none; background:rgba(0,0,0,0.5); position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:1050;">
+  <div class="modal-dialog" style="margin: 10vh auto; max-width: 400px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Введите данные карты</h5>
+        <button type="button" class="btn-close" id="closeCardModal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <form id="cardDataForm">
+          <div class="mb-3">
+            <label for="cardNumber" class="form-label">Номер карты</label>
+            <input type="text" class="form-control" id="cardNumber" maxlength="19" placeholder="0000 0000 0000 0000" required>
+          </div>
+          <div class="mb-3 d-flex">
+            <div class="me-2">
+              <label for="cardExpiry" class="form-label">Срок</label>
+              <input type="text" class="form-control" id="cardExpiry" maxlength="5" placeholder="MM/YY" required>
+            </div>
+            <div>
+              <label for="cardCVV" class="form-label">CVV</label>
+              <input type="text" class="form-control" id="cardCVV" maxlength="4" placeholder="CVV" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="cardName" class="form-label">Имя на карте</label>
+            <input type="text" class="form-control" id="cardName" placeholder="IVAN IVANOV" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Подключение IMask.js для маски ввода -->
+<script src="https://unpkg.com/imask"></script>
+
+<style>
+    .checkout-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 5px;
+        border: 1px solid #eee;
+    }
+    .sticky-checkout {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 20px;
+    }
+    .quantity-input {
+        height: 31px;
+    }
+    .form-check-input:checked {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+</style>
+
+<script>
+// Простой JavaScript для демонстрации (нужно доработать для реального проекта)
+document.querySelectorAll('.quantity-input').forEach(input => {
+    input.addEventListener('change', function() {
+        // Здесь должна быть логика обновления количества через AJAX
+        console.log('Количество изменено на:', this.value);
+    });
+});
+
+// --- Модальное окно для карты ---
+let cardData = null; // Здесь будут храниться данные карты (только на клиенте)
+let cardDataSaved = document.body.dataset.cardSaved === 'true'; // Флаг, что данные уже отправлены на сервер
+
+const cardRadio = document.getElementById('card');
+const cardModal = document.getElementById('cardModal');
+const closeCardModal = document.getElementById('closeCardModal');
+const cardDataForm = document.getElementById('cardDataForm');
+const checkoutForm = document.getElementById('checkoutForm');
+
+const hiddenCardNumber = document.getElementById('hiddenCardNumber');
+const hiddenCardExpiry = document.getElementById('hiddenCardExpiry');
+const hiddenCardCVV = document.getElementById('hiddenCardCVV');
+const hiddenCardName = document.getElementById('hiddenCardName');
+
+if (cardRadio) {
+    cardRadio.addEventListener('change', function() {
+        if (this.checked && !cardData) {
+            cardModal.style.display = 'block';
+        }
+    });
+}
+if (closeCardModal) {
+    closeCardModal.addEventListener('click', function() {
+        cardModal.style.display = 'none';
+        cardRadio.checked = false;
+        document.getElementById('sbp').checked = true;
+    });
+}
+if (cardDataForm) {
+    cardDataForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        cardData = {
+            number: document.getElementById('cardNumber').value,
+            expiry: document.getElementById('cardExpiry').value,
+            cvv: document.getElementById('cardCVV').value,
+            name: document.getElementById('cardName').value
+        };
+        hiddenCardNumber.value = cardData.number;
+        hiddenCardExpiry.value = cardData.expiry;
+        hiddenCardCVV.value = cardData.cvv;
+        hiddenCardName.value = cardData.name;
+        cardModal.style.display = 'none';
+        cardRadio.checked = true;
+        cardDataSaved = true;
+    });
+}
+if (checkoutForm) {
+    checkoutForm.addEventListener('submit', function(e) {
+        if (cardRadio.checked) {
+            if (!hiddenCardNumber.value || !hiddenCardExpiry.value || !hiddenCardCVV.value || !hiddenCardName.value) {
+                e.preventDefault();
+                cardModal.style.display = 'block';
+            } else if (cardDataSaved) {
+                // Если данные уже сохранены, не показываем модалку
+                // Просто отправляем форму
+            }
+        }
+    });
+}
+// Закрытие модального окна по клику вне его
+window.onclick = function(event) {
+    if (event.target === cardModal) {
+        cardModal.style.display = 'none';
+        cardRadio.checked = false;
+        document.getElementById('sbp').checked = true;
+    }
+};
+
+// Маска для номера карты
+IMask(document.getElementById('cardNumber'), { mask: '0000 0000 0000 0000' });
+// Маска для срока действия
+IMask(document.getElementById('cardExpiry'), { mask: '00/00' });
+// Маска для CVV
+IMask(document.getElementById('cardCVV'), { mask: '0000' });
+</script>
+{% endblock %}

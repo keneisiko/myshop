@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2 class="login-title">System Login</h2>
+    <form method="post" class="login-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_username">Username</label>
+            <input type="text" name="username" class="form-control" id="id_username" required>
+        </div>
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            <input type="password" name="password" class="form-control" id="id_password" required>
+        </div>
+        <button type="submit" class="btn btn-login">Login</button>
+        <a href="{% url 'register' %}" class="btn btn-register">Register</a>
+        <a href="{% url 'password_reset' %}" class="forgot-password">Forgot password?</a>
+    </form>
+</div>
+{% endblock %}

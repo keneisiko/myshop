@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-info mb-3">
+                В корзине товаров: <strong>{{ cart_item_count }}</strong>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body d-flex align-items-center">
+                    <img src="{{ profile.get_avatar_url }}" alt="Avatar" class="rounded-circle me-4" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #eee;">
+                    <div>
+                        <h4 class="mb-1">{{ user.username }}</h4>
+                        <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                        <form method="post" enctype="multipart/form-data" class="mt-2">
+                            {% csrf_token %}
+                            {{ form.avatar.label_tag }}
+                            {{ form.avatar }}
+                            <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Обновить аватар</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-credit-card"></i> Карта для оплаты
+                </div>
+                <div class="card-body">
+                    {% if card %}
+                        <div class="mb-2"><strong>Номер карты:</strong> **** **** **** {{ card.card_number|slice:'-4:' }}</div>
+                        <div class="mb-2"><strong>Имя на карте:</strong> {{ card.card_name }}</div>
+                        <div class="mb-2"><strong>Срок действия:</strong> {{ card.card_expiry }}</div>
+                        <div class="mb-2"><strong>CVV:</strong> ***</div>
+                        <div class="text-muted small">(Данные карты скрыты для безопасности)</div>
+                    {% else %}
+                        <div class="alert alert-warning mb-0">Нет сохранённой карты для текущего заказа.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

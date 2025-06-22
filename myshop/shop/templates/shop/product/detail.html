@@ -1,0 +1,27 @@
+{% extends "shop/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-5">
+            <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-7">
+            <h1>{{ product.name }}</h1>
+            <p class="h4">${{ product.price }}</p>
+            <p>{{ product.description }}</p>
+
+            {% if product.available %}
+                <form action="{% url 'shop:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary mt-3">Add to cart</button>
+                </form>
+            {% else %}
+                <p class="text-danger">This product is not available</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}  <!-- Убедитесь, что у вас есть base.html -->
+{% load static %}
+{% block title %}Выход из системы{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Вы вышли из системы</h2>
+    <p>Спасибо за посещение. Хотите <a href="{% url 'login' %}">войти снова</a>?</p>
+</div>
+{% endblock %}
